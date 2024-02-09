@@ -139,26 +139,9 @@ class MainMenuState extends MusicBeatState {
 		DiscordClient.changePresence("In the Menus", null);
 		Lib.application.window.title = "Friday Night Funkin': Mario's Madness";
 		#end
-
+			
 		if (Main.fpsVar != null) {
 			Main.fpsVar.visible = ClientPrefs.showFPS;
-		}
-
-		if(PlayState.curStage == 'piracy'){
-			PlayState.curStage = '';
-			Lib.current.scaleX = 1;
-			Lib.current.scaleY = 1;
-			if(PlayState.ogwinX == 0){
-			PlayState.ogwinX = Lib.application.window.x;
-			PlayState.ogwinY = Lib.application.window.y;
-			}
-			var win = Lib.application.window;
-			win.move(PlayState.ogwinX, PlayState.ogwinY);
-			FlxG.resizeWindow(1280, 720);
-			FlxG.resizeGame(1280, 720);
-			Lib.current.x = 0;
-			Lib.current.y = 0;
-			win.resizable = true;
 		}
 		
 		Lib.application.window.resizable = lime._internal.backend.native.NativeApplication.fullscreenable = true;
@@ -448,7 +431,7 @@ class MainMenuState extends MusicBeatState {
 		}
 		bgAm = amount;
 
-		super.create();
+                super.create();
 		FlxG.mouse.visible = true;
 	}
 
@@ -533,13 +516,13 @@ class MainMenuState extends MusicBeatState {
 						canselectshit = false;
 
 						FlxG.sound.music.pause();
-						openSubState(new VideoSubState('garlic'));				
+						//openSubState(new VideoSubState('garlic'));				
 					case 'v3':
 						typin = '';
 						canselectshit = false;
 
 						FlxG.sound.music.pause();
-						openSubState(new VideoSubState('V3'));			
+						//openSubState(new VideoSubState('V3'));			
 					case 'peepy':
 						CoolUtil.browserLoad('https://itemlabel.com/products/peepy');
 					case 'natetdom':
@@ -547,19 +530,19 @@ class MainMenuState extends MusicBeatState {
 						canselectshit = false;
 
 						FlxG.sound.music.pause();
-						openSubState(new VideoSubState('nate'));
+						//openSubState(new VideoSubState('nate'));
 					case 'unbeatable':
 						typin = '';
 						canselectshit = false;
 
 						FlxG.sound.music.pause();
-						openSubState(new VideoSubState('i hate this'));			
+						//openSubState(new VideoSubState('i hate this'));			
 					case 'scrubb':
 						typin = '';
 						canselectshit = false;
 
 						FlxG.sound.music.pause();
-						openSubState(new VideoSubState('scrubb'));
+						//openSubState(new VideoSubState('scrubb'));
 				}
 			}
 
@@ -621,7 +604,7 @@ class MainMenuState extends MusicBeatState {
 		}
 
 		Mouse.cursor = WEHOVERING ? BUTTON : ARROW;
-		if (controls.ACCEPT && smOpen) {
+		if (FlxG.mouse.justReleased && smOpen) {
 			smOpen = false;
 			FlxG.sound.play(Paths.sound('accept'));
 			if(showMsg == 1){
@@ -740,7 +723,7 @@ class MainMenuState extends MusicBeatState {
 				case 1:
 					switch (choice) {
 						case "MainGame":
-							new FlxTimer().start(0.4, function(tmr:FlxTimer) {FlxG.state.persistentDraw = true; openSubState(new StoryMenuState());});
+                                                new FlxTimer().start(0.4, function(tmr:FlxTimer) {FlxG.state.persistentDraw = true; openSubState(new StoryMenuState());});
 						case "WarpZone":
 							new FlxTimer().start(0.4, function(tmr:FlxTimer)
 							{
@@ -748,12 +731,15 @@ class MainMenuState extends MusicBeatState {
 							});
 							
 						case "Freeplay":
-							new FlxTimer().start(0.4, function(tmr:FlxTimer) {FlxG.state.persistentDraw = false; openSubState(new CustomFreeplayState());});
+                                                        new FlxTimer().start(0.4, function(tmr:FlxTimer) {FlxG.state.persistentDraw = false; openSubState(new CustomFreeplayState());});
 					}
 				case 2:
 					switch (choice) {
 						case "Options":
-							new FlxTimer().start(0.4, function(tmr:FlxTimer) {FlxG.state.persistentDraw = false; openSubState(new MMOptions());});
+							new FlxTimer().start(0.4, function(tmr:FlxTimer)
+							{
+							        MusicBeatState.switchState(new MMOptions());
+							});
 						case "Credits":
 							CreditsState.autoscroll = false;
 							MusicBeatState.switchState(new CreditsState());
@@ -1053,77 +1039,13 @@ class MainMenuState extends MusicBeatState {
 
 				new FlxTimer().start(2, function(tmr:FlxTimer) {
 					FlxG.camera.alpha = 0;
-					new FlxTimer().start(1, function (tmr:FlxTimer) {
-							#if VIDEOS_ALLOWED
-							var foundFile:Bool = false;
-							var fileName:String = #if MODS_ALLOWED Paths.modFolders('videos/' + "penkaru" + '.' + Paths.VIDEO_EXT); #else ''; #end
-							#if sys
-							if (FileSystem.exists(fileName))
-							{
-								foundFile = true;
-							}
-							#end
-
-							if (!foundFile) {
-								fileName = Paths.video("penkaru");
-								if (#if sys FileSystem.exists(fileName) #else OpenFlAssets.exists(fileName) #end)
-									foundFile = true;
-
-								if (foundFile) {
-									Lib.application.window.title = "*  You look inside the drawer and find a old vhs of a dance you used to do in highschool. *  Did this ever exist? When did you take this video?";
-									Lib.application.window.resizable = false;
-									FlxG.resizeWindow(1280, 720);
-
-									FlxG.sound.volume = 1;
-									FlxG.sound.soundTray.visual = false;
-									FlxG.sound.soundTray.show(true);
-
-									// Am I Evil??? (i do not care about streamer mode)
-									CppAPI.removeWindowIcon();
-									FlxG.fullscreen = FlxG.autoPause = false;
-									Lib.application.window.onClose.add(function () {
-										Lib.application.window.onClose.cancel();
-									});
-									
-									(new FlxVideo(fileName)).finishCallback = function() {Sys.exit(0);}
-									(new FlxTimer()).start(52, function (tmr:FlxTimer) {
-										CppAPI._setWindowLayered();
-					
-										var numTween:NumTween = FlxTween.num(1, 0, 3, {
-											onComplete: function(twn:FlxTween) {
-												Sys.exit(0);
-										}});
-					
-										numTween.onUpdate = function(twn:FlxTween)
-										{
-											#if windows
-											CppAPI.setWindowOppacity(numTween.value);
-											#end
-										}
-									});
-								}
-								else
-									FlxG.log.warn('Couldnt find video file: ' + fileName);
-								#end
-						}
-					});
+				
 				});
 			});
 		}
 
 		penkStage++;
 	}
-}
+    }
 
-class VideoSubState extends MusicBeatSubstate
-{
-	public function new(file:String){
-		(new FlxVideo(Paths.video('secrets/$file'))).finishCallback = function(){
-			FlxG.sound.music.resume();
-			MainMenuState.canselectshit = true;
 
-			close();
-		}
-		super();
-	}
-}

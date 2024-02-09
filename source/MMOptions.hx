@@ -1,12 +1,15 @@
 package;
 
 import Controls;
+#if desktop
 import discord_rpc.DiscordRpc;
+#end
 import flash.text.TextField;
 import flash.text.TextField;
 import flixel.FlxG;
 import flixel.FlxG;
 import flixel.FlxSprite;
+import flixel.addons.transition.FlxTransitionableState;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
 import flixel.addons.display.FlxGridOverlay;
@@ -32,7 +35,7 @@ import Discord.DiscordClient;
 
 // TO DO: Redo the menu creation system for not being as dumb
 // Yeah seems like a reasonable goal to me
-class MMOptions extends MusicBeatSubstate
+class MMOptions extends MusicBeatState
 {
 	var options:Array<String> = ['Notes', 'Controls', 'Preferences', 'Mario Options', 'Delete Data'];
 	private var grpOptions:FlxTypedGroup<FlxText>;
@@ -58,10 +61,6 @@ class MMOptions extends MusicBeatSubstate
         FlxG.camera.bgColor = 0x00FFFFFF;
 
         FlxG.camera.zoom = 0.95;
-		MainMenuState.instance.lerpCamZoom = true;
-		MainMenuState.instance.camZoomMulti = 0.94;
-        
-		FlxG.state.persistentDraw = true;
 
 		grpOptions = new FlxTypedGroup<FlxText>();
 		add(grpOptions);
@@ -88,6 +87,11 @@ class MMOptions extends MusicBeatSubstate
 		verText.alpha = 0; verText.y += 20;
 		FlxTween.tween(verText, {y: verText.y - 20, alpha: 1}, 1, {ease: FlxEase.circOut, startDelay: .5});
 
+		#if android
+		addVirtualPad(UP_DOWN, A_B);
+		addPadCamera();
+		#end
+		
 		super.create();
 	}
 
@@ -102,11 +106,11 @@ class MMOptions extends MusicBeatSubstate
 	{
 		super.update(elapsed);
 
-		if (FlxG.keys.justPressed.UP)
+		if (controls.UI_UP_P)
 		{
 			changeSelection(-1);
 		}
-		if (FlxG.keys.justPressed.DOWN)
+		if (controls.UI_DOWN_P)
 		{
 			changeSelection(1);
 		}
@@ -114,7 +118,7 @@ class MMOptions extends MusicBeatSubstate
 		if (controls.BACK)
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			FlxG.state.closeSubState();
+			MusicBeatState.switchState(new MainMenuState());
 			FlxG.mouse.visible = true;
 			FlxG.sound.music.stop();
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 1);
@@ -123,7 +127,7 @@ class MMOptions extends MusicBeatSubstate
 			DiscordClient.changePresence("In the Menus", null);
 			#end
 		}
-
+		
 		if (controls.ACCEPT)
 		{
 			for (item in grpOptions.members)
@@ -134,17 +138,32 @@ class MMOptions extends MusicBeatSubstate
 			switch (options[curSelected])
 			{
 				case 'Notes':
+					#if android
+				        removeVirtualPad();
+				        #end
 					openSubState(new NotesSubstate());
 
 				case 'Controls':
+					#if android
+				        removeVirtualPad();
+				        #end
 					openSubState(new ControlsSubstate());
 
 				case 'Preferences':
+					#if android
+				        removeVirtualPad();
+				        #end
 					openSubState(new PreferencesSubstate());
 
 				case 'Mario Options':
+					#if android
+				        removeVirtualPad();
+				        #end
 					openSubState(new MarioSubstate());
 				case 'Delete Data':
+					#if android
+				        removeVirtualPad();
+				        #end
 					openSubState(new DeleteSubstate());
 			}
 		}
@@ -227,6 +246,11 @@ class NotesSubstate extends MusicBeatSubstate
 		hsvText.size = 18;
 		add(hsvText);
 		changeSelection();
+
+	        #if android
+		addVirtualPad(FULL, A_B_C);
+		addPadCamera();
+		#end
 	}
 
 	var changingNote:Bool = false;
@@ -238,26 +262,26 @@ class NotesSubstate extends MusicBeatSubstate
 		{
 			if (holdTime < 0.5)
 			{
-				if (FlxG.keys.justPressed.LEFT)
+				if (controls.UI_LEFT_P)
 				{
 					updateValue(-1);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 				}
-				else if (FlxG.keys.justPressed.RIGHT)
+				else if (controls.UI_RIGHT_P)
 				{
 					updateValue(1);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 				}
-				else if (controls.RESET)
+				else if (controls.RESET #if android || _virtualpad.buttonC.justPressed #end)
 				{
 					resetValue(curSelected, typeSelected);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 				}
-				if (FlxG.keys.justReleased.RIGHT || FlxG.keys.justReleased.RIGHT)
+				if (controls.UI_LEFT_R || controls.UI_RIGHT_R)
 				{
 					holdTime = 0;
 				}
-				else if (FlxG.keys.pressed.LEFT || FlxG.keys.pressed.RIGHT)
+				else if (controls.UI_LEFT || controls.UI_RIGHT)
 				{
 					holdTime += elapsed;
 				}
@@ -270,15 +294,15 @@ class NotesSubstate extends MusicBeatSubstate
 					case 1 | 2:
 						add = 50;
 				}
-				if (FlxG.keys.pressed.LEFT)
+				if (controls.UI_LEFT)
 				{
 					updateValue(elapsed * -add);
 				}
-				else if (FlxG.keys.pressed.RIGHT)
+				else if (controls.UI_RIGHT)
 				{
 					updateValue(elapsed * add);
 				}
-				if (FlxG.keys.justReleased.RIGHT || FlxG.keys.justReleased.RIGHT)
+				if (controls.UI_LEFT_R || controls.UI_RIGHT_R)
 				{
 					FlxG.sound.play(Paths.sound('scrollMenu'));
 					holdTime = 0;
@@ -287,27 +311,27 @@ class NotesSubstate extends MusicBeatSubstate
 		}
 		else
 		{
-			if (FlxG.keys.justPressed.UP)
+			if (controls.UI_UP_P)
 			{
 				changeSelection(-1);
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
-			if (FlxG.keys.justPressed.DOWN)
+			if (controls.UI_DOWN_P)
 			{
 				changeSelection(1);
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
-			if (FlxG.keys.justPressed.LEFT)
+			if (controls.UI_LEFT_P)
 			{
 				changeType(-1);
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
-			if (FlxG.keys.justPressed.RIGHT)
+			if (controls.UI_RIGHT_P)
 			{
 				changeType(1);
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 			}
-			if (controls.RESET)
+			if (controls.RESET #if android || _virtualpad.buttonC.justPressed #end)
 			{
 				for (i in 0...3)
 				{
@@ -385,7 +409,12 @@ class NotesSubstate extends MusicBeatSubstate
 				{
 					spr.alpha = 0;
 				});
+				#if android
+				FlxTransitionableState.skipNextTransOut = true;
+				FlxG.resetState();
+				#else
 				close();
+				#end
 			}
 			changingNote = false;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -562,6 +591,11 @@ class ControlsSubstate extends MusicBeatSubstate
 			}
 		}
 		changeSelection();
+	
+	        #if android
+		addVirtualPad(NONE, B);
+		addPadCamera();
+		#end
 	}
 
 	var leaving:Bool = false;
@@ -599,7 +633,13 @@ class ControlsSubstate extends MusicBeatSubstate
 						spr.alpha = 0;
 					}
 				}
+				#if android
+				FlxTransitionableState.skipNextTransOut = true;
+				FlxG.resetState();
+				#else
 				close();
+				#end
+			
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 			}
 
@@ -821,7 +861,7 @@ class PreferencesSubstate extends MusicBeatSubstate
 {
 	private static var curSelected:Int = 0;
 	static var unselectableOptions:Array<String> = ['GRAPHICS', 'GAMEPLAY'];
-	static var noCheckbox:Array<String> = ['Framerate', 'Note Delay'];
+	static var noCheckbox:Array<String> = ['Framerate', 'Hitbox Alpha', 'Note Delay'];
 
 	static var options:Array<String> = [
 		'GRAPHICS',
@@ -840,8 +880,9 @@ class PreferencesSubstate extends MusicBeatSubstate
 		'Hide HUD',
 		'Hide Song Length',
 		'Flashing Lights',
-		'Camera Zooms'
-		#if !mobile, 'FPS Counter' #end
+		'Camera Zooms',
+		'Hitbox Alpha',
+		'FPS Counter'
 	];
 
 	private var grpOptions:FlxTypedGroup<Alphabet>;
@@ -935,6 +976,11 @@ class PreferencesSubstate extends MusicBeatSubstate
 		}
 		changeSelection();
 		reloadValues();
+	
+	        #if android
+		addVirtualPad(FULL, A_B);
+		addPadCamera();
+		#end
 	}
 
 	var nextAccept:Int = 5;
@@ -942,12 +988,12 @@ class PreferencesSubstate extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if (FlxG.keys.justPressed.UP)
+		if (controls.UI_UP_P)
 		{
 			changeSelection(-1);
 		}
 
-		if (FlxG.keys.justPressed.DOWN)
+		if (controls.UI_DOWN_P)
 		{
 			changeSelection(1);
 		}
@@ -975,7 +1021,12 @@ class PreferencesSubstate extends MusicBeatSubstate
 				showCharacter.alpha = 0;
 			}
 			descText.alpha = 0;
+			#if android
+			FlxTransitionableState.skipNextTransOut = true;
+			FlxG.resetState();
+			#else
 			close();
+			#end
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
 
@@ -1056,10 +1107,11 @@ class PreferencesSubstate extends MusicBeatSubstate
 		}
 		else
 		{
-			if (FlxG.keys.pressed.LEFT || FlxG.keys.pressed.RIGHT)
+			if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
 			{
-				var add:Int = FlxG.keys.pressed.LEFT ? -1 : 1;
-				if (holdTime > 0.5 || FlxG.keys.justPressed.LEFT || FlxG.keys.justPressed.RIGHT)
+				var add2:Float = controls.UI_LEFT ? -0.1 : 0.1;
+				var add:Int = controls.UI_LEFT ? -1 : 1;
+				if (holdTime > 0.5 || controls.UI_LEFT || controls.UI_RIGHT)
 					switch (options[curSelected])
 					{
 						case 'Framerate':
@@ -1079,6 +1131,14 @@ class PreferencesSubstate extends MusicBeatSubstate
 								FlxG.drawFramerate = ClientPrefs.framerate;
 								FlxG.updateFramerate = ClientPrefs.framerate;
 							}
+
+						case 'Hitbox Alpha':
+							ClientPrefs.hitboxalpha += add2;
+							if (ClientPrefs.hitboxalpha < 0)
+								ClientPrefs.hitboxalpha = 0.0;
+							else if (ClientPrefs.hitboxalpha > 1)
+								ClientPrefs.hitboxalpha = 1;
+						
 						case 'Note Delay':
 							var mult:Int = 1;
 							if (holdTime > 1.5)
@@ -1131,8 +1191,10 @@ class PreferencesSubstate extends MusicBeatSubstate
 		switch (options[curSelected])
 		{
 			case 'Framerate':
-				daText = "Pretty self explanatory, isn't it?\nDefault value is 60.";
-			case 'Note Delay':
+				daText = "Changes opacity -omgPretty self explanatory, isn't it?\nDefault value is 60.";
+			case 'Hitbox Alpha':
+				daText = "Changes opacity.";
+                        case 'Note Delay':
 				daText = "Changes how late a note is spawned.\nUseful for preventing audio lag from wireless earphones.";
 			case 'FPS Counter':
 				daText = "If unchecked, hides FPS Counter.";
@@ -1262,6 +1324,8 @@ class PreferencesSubstate extends MusicBeatSubstate
 				{
 					case 'Framerate':
 						daText = '' + ClientPrefs.framerate;
+					case 'Hitbox Alpha':
+						daText = '' + ClientPrefs.hitboxalpha;
 					case 'Note Delay':
 						daText = ClientPrefs.noteOffset + 'ms';
 				}
@@ -1409,6 +1473,11 @@ class MarioSubstate extends MusicBeatSubstate
 		}
 		changeSelection();
 		reloadValues();
+	
+	        #if android
+		addVirtualPad(FULL, A_B);
+		addPadCamera();
+		#end
 	}
 
 	var nextAccept:Int = 5;
@@ -1416,11 +1485,11 @@ class MarioSubstate extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if (FlxG.keys.justPressed.UP)
+		if (controls.UI_UP_P)
 		{
 			changeSelection(-1);
 		}
-		if (FlxG.keys.justPressed.DOWN)
+		if (controls.UI_DOWN_P)
 		{
 			changeSelection(1);
 		}
@@ -1444,7 +1513,12 @@ class MarioSubstate extends MusicBeatSubstate
 				}
 			}
 			descText.alpha = 0;
+			#if android
+			FlxTransitionableState.skipNextTransOut = true;
+			FlxG.resetState();
+			#else
 			close();
+			#end
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
 
@@ -1456,6 +1530,8 @@ class MarioSubstate extends MusicBeatSubstate
 			{
 				switch (options[curSelected])
 				{
+					case 'GPU Textures':
+						ClientPrefs.gpuTextures = !ClientPrefs.gpuTextures;
 					case 'Enable TV Effect':
 						ClientPrefs.filtro85 = !ClientPrefs.filtro85;
 					case 'Enable Resume Wait':
@@ -1464,6 +1540,7 @@ class MarioSubstate extends MusicBeatSubstate
 						ClientPrefs.noVirtual = !ClientPrefs.noVirtual;
 					case 'Enable Discord Rich Presence':
 						ClientPrefs.noDiscord = !ClientPrefs.noDiscord;
+						#if desktop
 						if (ClientPrefs.noDiscord)
 						{
 							DiscordClient.start();
@@ -1472,15 +1549,16 @@ class MarioSubstate extends MusicBeatSubstate
 						{
 							DiscordClient.shutdown();
 						}
+						#end
 				}
 				FlxG.sound.play(Paths.sound('scrollMenu'));
 				reloadValues();
 			}
 			else
 				{
-					if (FlxG.keys.justPressed.LEFT || FlxG.keys.justPressed.RIGHT)
+					if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
 					{
-						var add:Int = FlxG.keys.justPressed.LEFT ? -1 : 1;
+						var add:Int = controls.UI_LEFT ? -1 : 1;
 							switch (options[curSelected])
 							{
 								case 'Menu BG':
@@ -1518,6 +1596,8 @@ class MarioSubstate extends MusicBeatSubstate
 		var daText:String = '';
 		switch (options[curSelected])
 		{
+			case 'GPU Textures':
+				daText = "If checked, renders textures on the GPU instead,\ndecreasing memory usage";
 			case 'Enable TV Effect':
 				daText = "Pretty self explanatory, isn't it?";
 			case 'Enable Resume Wait':
@@ -1582,6 +1662,8 @@ class MarioSubstate extends MusicBeatSubstate
 				var daValue:Bool = false;
 				switch (options[checkboxNumber[i]])
 				{
+					case 'GPU Textures':
+						daValue = ClientPrefs.gpuTextures;
 					case 'Enable TV Effect':
 						daValue = ClientPrefs.filtro85;
 					case 'Enable Resume Wait':
@@ -1663,7 +1745,6 @@ class DeleteSubstate extends MusicBeatSubstate
 			rotButton.x += 400;
 			rotButton.visible = false;
 			add(rotButton);
-
 		}
 
 	override function update(elapsed:Float)
@@ -1673,14 +1754,19 @@ class DeleteSubstate extends MusicBeatSubstate
 			}else{
 				timer = 0;
 			}
-			if (controls.BACK && delPhase != 4)
+			if (controls.BACK #if android || FlxG.android.justReleased.BACK #end && delPhase != 4)
 				{
 					FlxG.sound.play(Paths.sound('cancelMenu'));
 					FlxG.mouse.visible = false;
-					close();
+					#if android
+				        FlxTransitionableState.skipNextTransOut = true;
+				        FlxG.resetState();
+				        #else
+				        close();
+				        #end
 				}
 			
-			if(controls.ACCEPT && delPhase <= 3 && timer == 0 && cat.angle == 0){
+			if(FlxG.mouse.justReleased && delPhase <= 3 && timer == 0 && cat.angle == 0){
 				switch(delPhase){
 					case 0:
 						timer = 1;

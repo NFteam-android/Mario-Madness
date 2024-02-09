@@ -17,8 +17,8 @@ class YCBUShaderTester extends MusicBeatState
 	override function create()
 	{
 		shader = new OldTVShader();
-		var border:VCRBorder = new VCRBorder();
 		var vcr:VCRMario85 = new VCRMario85();
+		var border:VCRBorder = new VCRBorder();
 
 		cam = new FlxCamera(0, 0, 1280, 720);
 		cam.setFilters([new ShaderFilter(vcr), new ShaderFilter(shader), new ShaderFilter(border)]);
