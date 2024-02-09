@@ -144,7 +144,7 @@ class MainMenuState extends MusicBeatState {
 			Main.fpsVar.visible = ClientPrefs.showFPS;
 		}
 		
-		Lib.application.window.resizable = lime._internal.backend.native.NativeApplication.fullscreenable = true;
+		//Lib.application.window.resizable = lime._internal.backend.native.NativeApplication.fullscreenable = true;
 
 		if(FlxG.sound.music == null){
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
