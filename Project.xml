@@ -2,7 +2,7 @@
 <project>
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': Mario's Madness" file="Mario" packageName="com.shadowmario.psychengine" package="com.shadowmario.psychengine" main="Main" version="2.0.1" company="ShadowMario" />
+	<app title="Friday Night Funkin': Mario's Madness" file="Mario" packageName="com.mariomadnessv2.psychengine" package="com.mariomadnessv2.psychengine" main="Main" version="2.0.1" company="qqqeb" />
 	
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
@@ -26,11 +26,7 @@
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
 	
-	<!--Mobile-specific-->
-	<window if="mobile" orientation="landscape" fullscreen="true" width="0" height="0" resizable="false"/>
-	
-	<!--Switch-specific-->
-	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
+        <window if="mobile || switch" orientation="landscape" fullscreen="true" resizable="false" vsync="true"/>
 	
 	<!-- _____________________________ Path Settings ____________________________ -->
 	
@@ -44,9 +40,10 @@
 	<assets path="assets/preload" rename="assets" exclude="*.mp3"  unless="web"/>
 	
 	<!-- PSYCH ENGINE CUSTOMIZATION -->
-	<define name="MODS_ALLOWED" if="desktop" />
-	<define name="LUA_ALLOWED" if="windows" />
-	<define name="VIDEOS_ALLOWED" if="web || windows" unless="32"/>
+	<define name="MODS_ALLOWED" if="desktop"  />
+	<define name="LUA_ALLOWED" if="windows || android" />
+	<define name="VIDEOS_ALLOWED" if="web || windows || android" unless="32"/>
+	<define name="CRASH_HANDLER" if="desktop release || android" />
 	
 	<!-- <define name="PRELOAD_ALL" /> -->
 	<define name="PRELOAD_ALL" unless="web" />
@@ -63,7 +60,7 @@
 		<library name="shared"        preload="false" />
 	</section>
 	
-	<haxelib name="hxcodec" version="2.6.1" />
+	<haxelib name="hxCodec" />
 
 	<assets path="plugins/"             rename=''               if="VIDEOS_ALLOWED windows" />
 	<assets path="dlls/"                rename=''               if="VIDEOS_ALLOWED windows" />
@@ -73,7 +70,7 @@
 	<assets path="assets/shared"        library="shared"        exclude="*.ogg" if="web"/>
 	<assets path="assets/shared"        library="shared"        exclude="*.mp3" unless="web"/>
 	
-	<assets path='example_mods' rename='mods' embed='false' if="MODS_ALLOWED"/>
+	<assets path='example_mods' rename='mods' embed='false'/>
 	<assets path='art/readme.txt' rename='do NOT readme.txt' />
 	<!-- <template path='mods' /> -->
 	
@@ -98,6 +95,7 @@
 	<haxelib name="flixel-ui" />
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
 	<haxelib name="faxe" if='switch'/>
+	<haxelib name="extension-androidtools" if="android"/>
 	<!--<haxelib name="polymod"/> -->
 	<haxelib name="discord_rpc" if="desktop"/>
 	<!-- <haxelib name="hxcpp-debug-server" if="desktop"/> -->
@@ -130,7 +128,7 @@
 	
 	<!--Disable the Flixel sound management code-->
 	<!--<haxedef name="FLX_NO_SOUND_SYSTEM" />-->
-	
+	<haxedef name="HXC_DEBUG_TRACE" if="debug" />
 	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
 	
@@ -141,11 +139,11 @@
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
 
 	<haxedef name="no-deprecation-warnings"/>
+
+	<config:android permission="android.permission.READ_EXTERNAL_STORAGE" if="android"/>
+	<config:android permission="android.permission.WRITE_EXTERNAL_STORAGE" if="android"/>
 	
-	<!-- _________________________________ Custom _______________________________ -->
-	
-	<!--Place custom nodes like icons here (higher priority to override the HaxeFlixel icon)-->
-	
+	<!-- _________________________________ Custom _______________________________ -->	
 	<icon path="art/icon16.png" size='16'/>
 	<icon path="art/icon32.png" size='32'/>
 	<icon path="art/icon64.png" size='64'/>
