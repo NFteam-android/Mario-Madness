@@ -28,7 +28,7 @@ jobs:
         uses: nttld/setup-ndk@main
         id: setup-ndk
         with:
-          ndk-version: r15c
+          ndk-version: r21e
 
       - name: Setup Java JDK
         uses: actions/setup-java@main
@@ -47,14 +47,14 @@ jobs:
           haxelib install hxcpp 4.2.1 > /dev/null
           haxelib install lime 7.9.0
           haxelib install openfl 9.1.0
-          haxelib --never install flixel 5.2.1
+          haxelib --never install flixel 5.2.2
           haxelib run lime setup flixel
           haxelib install flixel-tools
           haxelib install flixel-ui
           haxelib install flixel-addons 3.0.2
           haxelib install tjson
           haxelib install hxjsonast
-          haxelib install hscript
+          haxelib install hscript 2.5.0
           haxelib install hxCodec 2.6.1
           haxelib git linc_luajit https://github.com/Sirox228/linc_luajit
           haxelib install extension-androidtools --quiet
@@ -72,7 +72,7 @@ jobs:
           haxelib run lime config ANDROID_SETUP true
           haxelib set lime 7.9.0
           haxelib set openfl 9.1.0
-          haxelib set flixel 5.2.1
+          haxelib set flixel 5.2.2
           haxelib set flixel-addons 3.0.2
           haxelib set hxcpp 4.2.1
           haxelib set hxCodec 2.6.1
